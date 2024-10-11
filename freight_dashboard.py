@@ -5,6 +5,33 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 from datetime import datetime, timedelta
 
+# Load the LR1 rate historical data from the Excel file
+@st.cache_data
+def load_training_data():
+    file_path = "LR1 rate dt.xlsx"  # Since the file is in the same directory as the script
+    return pd.read_excel(file_path)
+
+# Preprocess the data
+def preprocess_data(data):
+    data['Date'] = pd.to_datetime(data['Date'])
+    data['Rate'] = pd.to_numeric(data['Rate'], errors='coerce')
+    data = data.dropna()
+    return data
+
+# Main Streamlit App
+st.title("Freight Rate Prediction Dashboard")
+
+# Load the data
+data = load_training_data()
+data = preprocess_data(data)
+
+# Display the data or run your model
+st.write("Here is the freight data:")
+st.dataframe(data)
+
+# Continue with the rest of your Streamlit app...
+
+
 # Function to calculate volatility over a specified period
 def calculate_volatility(data, window=14):
     log_returns = np.log(data / data.shift(1))
