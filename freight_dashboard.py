@@ -40,11 +40,16 @@ def predict_future_rates(mu, theta, sigma, last_rate, tonnage_effect, oil_effect
         # Mean reversion component
         mean_reversion = theta * (mu - future_rates[t-1])
         
-        # Sentiment effect: Affects initial days more significantly (Bearish: Sharp drop, Bullish: Sharp rise)
+        # Sentiment effect: Bullish shows upward movement, Bearish shows downward unless supply is very low
         if sentiment == "Bullish":
             sentiment_effect = 0.03 * sigma * min(t, 4)  # Strong positive effect peaking around day 4
+        elif sentiment == "Bearish":
+            if tonnage_effect > 0:  # If tonnage is very low, bearish effect can still lead to upward rates
+                sentiment_effect = 0.015 * sigma * min(t, 4)  # Reduced positive effect in bearish with very low supply
+            else:
+                sentiment_effect = -0.03 * sigma * min(t, 4)  # Strong negative effect, sharper drop for bearish
         else:
-            sentiment_effect = -0.03 * sigma * min(t, 4)  # Strong negative effect, sharper drop for bearish
+            sentiment_effect = 0
 
         # Adjust based on tonnage and oil effects
         future_rates[t] = future_rates[t-1] + mean_reversion + tonnage_effect + oil_effect + sentiment_effect
@@ -136,5 +141,6 @@ if user_input:
     
     except ValueError:
         st.error("Invalid input. Please enter numeric rates separated by spaces or new lines.")
+
 
 
